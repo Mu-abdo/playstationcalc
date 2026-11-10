@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حاسبة البلايستيشن</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#f3f5fb;--card:#fff;--ink:#16203a;--mute:#66708a;--line:#dfe4f0;--pri:#2f5bea;--pri2:#e8eefe;--ok:#12805c;--warn:#b45309;--warnbg:#fff4e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1220;--card:#161d33;--ink:#eaeefb;--mute:#97a1bd;--line:#26304d;--pri:#6f8dff;--pri2:#1d2850;--ok:#4cd6a0;--warn:#fbbf6a;--warnbg:#3a2c12}}
+:root[data-theme="dark"]{--bg:#0d1220;--card:#161d33;--ink:#eaeefb;--mute:#97a1bd;--line:#26304d;--pri:#6f8dff;--pri2:#1d2850;--ok:#4cd6a0;--warn:#fbbf6a;--warnbg:#3a2c12}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Cairo',Tahoma,Arial,sans-serif;line-height:1.6}
+.app{max-width:880px;margin:0 auto;padding:22px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+h1{font-size:26px;margin:0}h1 span{color:var(--pri)}
+h2{font-size:17px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+label{display:block;font-size:13px;color:var(--mute);font-weight:600;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+small{color:var(--mute);font-size:12px;display:block;margin-top:3px}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px}
+.b{background:var(--pri);color:#fff;padding:10px 18px;font-weight:700}
+.g{background:var(--pri2);color:var(--pri);padding:8px 14px;font-weight:700}
+.x{background:none;color:var(--mute);font-size:20px;padding:4px 10px}
+.add{display:flex;gap:10px;margin-bottom:12px}
+.pl{display:grid;grid-template-columns:1.4fr auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.pl:first-of-type{border-top:0}
+.st{display:flex;align-items:center;gap:6px}
+.st button{width:36px;height:36px;background:var(--pri2);color:var(--pri);font-size:20px;font-weight:700}
+.st input{width:62px;text-align:center;font-weight:700}
+.sh{font-weight:800;font-size:18px;text-align:left}.sh small{font-weight:400}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.sum div{background:var(--pri2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--mute)}
+.sum b{display:block;font-size:20px;color:var(--ink)}
+.warn{background:var(--warnbg);color:var(--warn);padding:10px 12px;border-radius:10px;font-size:14px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 6px;text-align:start;border-bottom:1px solid var(--line);font-size:15px}
+th{color:var(--mute);font-size:13px}td.n{font-weight:800;color:var(--ok);font-size:17px}
+tfoot td{font-weight:800;border-bottom:0}
+.bar{height:6px;background:var(--pri2);border-radius:4px;margin-top:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri)}
+.act{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.empty{color:var(--mute);text-align:center;padding:14px}
+@media(max-width:560px){.pl{grid-template-columns:1fr auto;grid-template-areas:"a d" "b c"}.pl>:nth-child(1){grid-area:a}.pl>:nth-child(2){grid-area:b}.pl>:nth-child(3){grid-area:c;text-align:end}.pl>:nth-child(4){grid-area:d}}
+/* Flexible sizing and touch controls for phones, tablets and desktop. */
+.app,header,.card,.grid>*,.pl>*,.add input{min-width:0}
+header{flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,26px);overflow-wrap:anywhere}
+header button,.add button{flex-shrink:0}
+.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+button{min-height:44px;touch-action:manipulation}
+.st button{width:44px;height:44px;flex-shrink:0}
+.st input{min-width:0;padding-inline:4px}
+.add input{flex:1}
+.sh,.sum b,.warn,td,th{overflow-wrap:anywhere}
+.table-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.table-scroll:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+table{table-layout:fixed;min-width:260px}
+th:first-child{width:32%}
+.act>button{flex:1 1 140px}
+@media(min-width:561px){.pl{grid-template-columns:minmax(0,1.4fr) auto minmax(0,1fr) auto}}
+@media(max-width:560px){
+.app{padding:16px 12px 32px}
+header{gap:10px}
+header .g{font-size:14px}
+.card{padding:14px;margin-bottom:12px}
+input,select{font-size:16px}
+.sum{grid-template-columns:repeat(2,minmax(0,1fr))}
+th,td{padding:9px 4px;font-size:13px}
+td.n{font-size:15px}
+}
+@media(max-width:360px){
+header{align-items:stretch}
+header .g{width:100%}
+.grid{grid-template-columns:minmax(0,1fr)}
+.sum div{padding:10px 8px}
+.sum b{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+ <header><h1>حاسبة <span>البلايستيشن</span></h1><button class="g" id="reset">بدء جلسة جديدة</button></header>
+
+ <div class="card">
+  <h2>١. إعدادات الجلسة</h2>
+  <div class="grid">
+   <div><label for="dur">مدة الماتش (دقيقة)</label><input id="dur" type="number" min="1" step="1" inputmode="numeric"></div>
+   <div><label for="price">سعر الساعة (جنيه)</label><input id="price" type="number" min="0" step="any" inputmode="decimal"></div>
+   <div><label for="hours">إجمالي ساعات القعدة</label><input id="hours" type="number" min="0" step="any" inputmode="decimal" placeholder="تلقائي"><small>سيبه فاضي لو عايزه يتحسب من الماتشات</small></div>
+   <div><label for="ppm">عدد اللاعبين في الماتش</label><input id="ppm" type="number" min="1" step="1" inputmode="numeric"></div>
+   <div><label for="rnd">تقريب المبلغ</label><select id="rnd"><option value="0">من غير تقريب</option><option value="1">لأقرب جنيه</option><option value="5">لأقرب ٥ جنيه</option><option value="10">لأقرب ١٠ جنيه</option></select></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>٢. اللاعبين وعدد الماتشات</h2>
+  <div class="add"><input id="nm" aria-label="اسم اللاعب" placeholder="اسم اللاعب" maxlength="30"><button class="b" id="add">إضافة</button></div>
+  <div id="list"></div>
+ </div>
+
+ <div class="card" id="res">
+  <h2>٣. الحساب</h2>
+  <div id="out"></div>
+ </div>
+</div>
+
+<script>
+var KEY='ps-split-v1',S={dur:20,price:60,hours:'',ppm:2,rnd:1,pl:[{n:'أحمد',m:3},{n:'محمد',m:2},{n:'علي',m:1}]};
+try{var sv=JSON.parse(localStorage.getItem(KEY));if(sv&&sv.pl)S=sv}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function f(n){return (Math.round(n*100)/100).toLocaleString('en-US',{maximumFractionDigits:2})}
+function num(v,d){var x=parseFloat(v);return isFinite(x)&&x>=0?x:d}
+
+function calc(){
+ var dur=num(S.dur,0),price=num(S.price,0),ppm=Math.max(1,num(S.ppm,1)),sumM=0;
+ S.pl.forEach(function(p){sumM+=num(p.m,0)});
+ var matches=sumM/ppm,played=matches*dur/60;
+ var hrs=S.hours===''||S.hours==null?played:num(S.hours,played);
+ var bill=hrs*price,step=num(S.rnd,0),rows=[],total=0;
+ S.pl.forEach(function(p){
+  var m=num(p.m,0),share=sumM?m/sumM*bill:0,pay=step?Math.ceil(share/step-1e-9)*step:share;
+  total+=pay;rows.push({n:p.n,m:m,pct:sumM?m/sumM*100:0,pay:pay});
+ });
+ return{sumM:sumM,matches:matches,played:played,hrs:hrs,bill:bill,rows:rows,total:total,customHrs:S.hours!==''&&S.hours!=null};
+}
+
+function renderList(){
+ var h='';
+ S.pl.forEach(function(p,i){
+  h+='<div class="pl"><input data-n="'+i+'" value="'+esc(p.n)+'" aria-label="الاسم">'
+   +'<div class="st"><button data-d="'+i+'" aria-label="إنقاص">−</button><input data-m="'+i+'" type="number" min="0" step="1" inputmode="numeric" value="'+p.m+'" aria-label="عدد الماتشات"><button data-u="'+i+'" aria-label="زيادة">+</button></div>'
+   +'<div class="sh" data-pay="'+i+'"></div><button class="x" data-x="'+i+'" aria-label="حذف">×</button></div>';
+ });
+ $('list').innerHTML=h||'<div class="empty">ضيف أول لاعب 👆</div>';
+ renderOut();
+}
+
+function renderOut(){
+ var c=calc(),h='';
+ document.querySelectorAll('[data-pay]').forEach(function(el){
+  var r=c.rows[el.getAttribute('data-pay')];
+  if(r)el.innerHTML=f(r.pay)+' ج<small>'+r.m+' ماتش · '+f(r.pct)+'%</small>';
+ });
+ if(!S.pl.length){$('out').innerHTML='<div class="empty">لسه مفيش لاعبين.</div>';return}
+ h+='<div class="sum"><div>إجمالي الماتشات<b>'+f(c.matches)+'</b></div><div>وقت اللعب الفعلي<b>'+f(c.played)+' ساعة</b></div><div>ساعات الحساب<b>'+f(c.hrs)+' ساعة</b></div><div>الفاتورة<b>'+f(c.bill)+' ج</b></div></div>';
+ if(c.customHrs&&c.hrs<c.played-0.001)h+='<div class="warn">ساعات القعدة ('+f(c.hrs)+') أقل من وقت الماتشات الفعلي ('+f(c.played)+'). راجع الأرقام.</div>';
+ if(c.customHrs&&c.hrs>c.played+0.001)h+='<div class="warn">فيه '+f(c.hrs-c.played)+' ساعة وقت ضايع بين الماتشات، وموزعة على الكل بنسبة ماتشاتهم.</div>';
+ h+='<div class="table-scroll" role="region" aria-label="تفاصيل الحساب" tabindex="0"><table><thead><tr><th>اللاعب</th><th>الماتشات</th><th>النسبة</th><th>يدفع</th></tr></thead><tbody>';
+ c.rows.forEach(function(r){h+='<tr><td>'+esc(r.n||'—')+'</td><td>'+r.m+'</td><td>'+f(r.pct)+'%<div class="bar"><i style="width:'+r.pct+'%"></i></div></td><td class="n">'+f(r.pay)+' ج</td></tr>'});
+ h+='</tbody><tfoot><tr><td colspan="3">المجموع'+(c.total-c.bill>0.005?' (بعد التقريب)':'')+'</td><td>'+f(c.total)+' ج</td></tr></tfoot></table></div>';
+ h+='<div class="act"><button class="b" id="cp">نسخ الحساب</button><button class="g" id="wa">إرسال واتساب</button></div>';
+ $('out').innerHTML=h;
+ var t=text(c);
+ $('cp').onclick=function(){var b=this;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='تم النسخ ✓'},function(){window.prompt('انسخ الحساب:',t)})};
+ $('wa').onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')};
+}
+
+function text(c){
+ var t='🎮 حساب البلايستيشن\nالفاتورة: '+f(c.bill)+' ج ('+f(c.hrs)+' ساعة × '+f(num(S.price,0))+')\n\n';
+ c.rows.forEach(function(r){t+=r.n+': '+f(r.pay)+' ج ('+r.m+' ماتش)\n'});
+ return t+'\nالمجموع: '+f(c.total)+' ج';
+}
+
+function init(){
+ ['dur','price','hours','ppm','rnd'].forEach(function(k){
+  var el=$(k);el.value=S[k];
+  el.addEventListener('input',function(){S[k]=el.value;save();renderOut()});
+ });
+ $('add').onclick=addP;
+ $('nm').addEventListener('keydown',function(e){if(e.key==='Enter')addP()});
+ $('reset').onclick=function(){if(confirm('تصفير كل الماتشات وبدء جلسة جديدة؟')){S.pl.forEach(function(p){p.m=0});save();renderList()}};
+ $('list').addEventListener('input',function(e){
+  var t=e.target;
+  if(t.hasAttribute('data-n'))S.pl[t.getAttribute('data-n')].n=t.value;
+  if(t.hasAttribute('data-m'))S.pl[t.getAttribute('data-m')].m=t.value===''?0:Math.max(0,parseInt(t.value,10)||0);
+  save();renderOut();
+ });
+ $('list').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  var d=t.getAttribute('data-d'),u=t.getAttribute('data-u'),x=t.getAttribute('data-x');
+  if(d!=null)S.pl[d].m=Math.max(0,num(S.pl[d].m,0)-1);
+  else if(u!=null)S.pl[u].m=num(S.pl[u].m,0)+1;
+  else if(x!=null)S.pl.splice(x,1);
+  else return;
+  save();renderList();
+ });
+ renderList();
+}
+function addP(){var n=$('nm').value.trim();if(!n)return;S.pl.push({n:n,m:0});$('nm').value='';save();renderList();$('nm').focus()}
+init();
+</script>
+</body>
+</html>
