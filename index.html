@@ -72,6 +72,22 @@ tfoot td{border-bottom:0;padding-top:20px;font-weight:800}
 @media(max-width:560px){.app{padding:22px 14px 32px;gap:18px}header{flex-wrap:wrap;gap:18px;padding-bottom:4px}.brand{gap:12px}.brand-icon{width:48px;height:48px;border-radius:14px 14px 14px 4px}.brand-icon svg{width:29px;height:29px}.tagline{font-size:12px}header>.g{width:100%}.card{padding:20px;border-radius:16px}h2{font-size:16px;margin-bottom:20px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}.grid>:last-child{grid-column:1/-1}label{font-size:11px}.pl{padding:14px;gap:12px 8px}.sum>div{padding:14px 12px}.sum b{font-size:21px}.sh{font-size:20px}.sum{gap:10px}th,td{padding:12px 4px}}
 @media(max-width:360px){.card{padding:16px}.grid{grid-template-columns:minmax(0,1fr)}.pl{padding:12px}.st{gap:2px}.st button{min-width:40px;width:40px}.st input{width:40px}.sh small{font-size:9px}.brand-icon{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+.draw{grid-column:1/-1}
+.draw h2{margin-bottom:8px}
+.draw-hint{color:var(--mute);font-size:13px;margin:0 0 18px}
+.draw-controls{display:flex;align-items:end;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.draw-controls>div{flex:1 1 220px;min-width:0}
+.draw-controls>button{min-height:50px;flex:0 1 180px}
+#draw-result{display:grid;gap:12px}
+#draw-result>.draw-hint{margin:0}
+.draw-match{background:#f6f6f6;border:1px solid var(--line);border-radius:12px;padding:18px}
+.draw-match h3{font-size:12px;color:var(--mute);margin:0 0 12px;font-weight:600}
+.draw-versus{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;text-align:center;font-weight:700}
+.draw-team{overflow-wrap:anywhere;min-width:0}
+.draw-team span{display:block}
+.draw-vs{background:var(--ink);color:#fff;border-radius:50%;width:38px;height:38px;display:grid;place-items:center;font-size:11px}
+.draw-wait{padding:14px 18px;border:1px dashed #aaa;border-radius:10px;font-size:13px;overflow-wrap:anywhere}
+@media(max-width:560px){.draw-controls{gap:12px}.draw-controls>button{flex:1 1 100%}.draw-match{padding:14px}.draw-versus{gap:8px;font-size:14px}}
 </style>
 </head>
 <body>
@@ -92,6 +108,12 @@ tfoot td{border-bottom:0;padding-top:20px;font-weight:800}
   </div>
  </div>
 
+ <section class="card draw" aria-labelledby="draw-title">
+  <h2 id="draw-title">قرعة الماتشات</h2>
+  <p class="draw-hint">مين هيلعب مع مين؟ القرعة بتستخدم أسماء اللاعبين اللي ضفتهم تحت.</p>
+  <div class="draw-controls"><div><label for="draw-mode">نظام اللعب</label><select id="draw-mode"><option value="1">فردي — واحد ضد واحد</option><option value="2">مالتي — اتنين ضد اتنين</option></select></div><button class="b" id="draw-button" type="button">اعمل القرعة</button></div>
+  <div id="draw-result" role="status" aria-live="polite" aria-atomic="true"><p class="draw-hint">اختار نظام اللعب واضغط «اعمل القرعة».</p></div>
+ </section>
  <div class="card">
   <h2><span class="step" aria-hidden="true">٢</span> اللاعبين والماتشات</h2>
   <div class="add"><input id="nm" aria-label="اسم اللاعب" placeholder="اسم اللاعب" maxlength="30"><button class="b" id="add">إضافة</button></div>
@@ -138,6 +160,7 @@ function renderList(){
 }
 
 function renderOut(){
+ refreshDraw();
  var c=calc(),h='';
  document.querySelectorAll('[data-pay]').forEach(function(el){
   var r=c.rows[el.getAttribute('data-pay')];
@@ -163,7 +186,45 @@ function text(c){
  return t+'\nالمجموع: '+f(c.total)+' ج';
 }
 
+var drawRoster=null;
+function makeDraw(players,teamSize){
+ var pool=players.filter(function(p){return String(p.n).trim()!==''}).map(function(p){return {n:String(p.n).trim()}});
+ for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=pool[i];pool[i]=pool[j];pool[j]=tmp}
+ var size=teamSize===2?2:1,matches=[];
+ while(pool.length>=size*2){matches.push([pool.splice(0,size),pool.splice(0,size)])}
+ return {matches:matches,waiting:pool};
+}
+function clearDraw(){
+ drawRoster=null;
+ $('draw-result').innerHTML='<p class="draw-hint">اختار نظام اللعب واضغط «اعمل القرعة».</p>';
+ $('draw-button').textContent='اعمل القرعة';
+}
+function refreshDraw(){
+ if(drawRoster!==null&&drawRoster!==JSON.stringify(S.pl.map(function(p){return p.n})))clearDraw();
+}
+function runDraw(){
+ var size=Number($('draw-mode').value),players=S.pl.filter(function(p){return String(p.n).trim()!==''});
+ if(players.length<size*2){
+  $('draw-result').innerHTML='<p class="warn">ضيف '+(size===2?'٤ لاعبين على الأقل للمالتي (اتنين ضد اتنين).':'لاعبين على الأقل للفردي.')+'</p>';
+  drawRoster=JSON.stringify(S.pl.map(function(p){return p.n}));return;
+ }
+ var result=makeDraw(players,size),h='';
+ result.matches.forEach(function(match,i){
+  h+='<div class="draw-match"><h3>المواجهة '+(i+1)+'</h3><div class="draw-versus">';
+  match.forEach(function(team,t){
+   if(t)h+='<span class="draw-vs">ضد</span>';
+   h+='<div class="draw-team">'+team.map(function(p){return '<span>'+esc(p.n)+'</span>'}).join('')+'</div>';
+  });
+  h+='</div></div>';
+ });
+ if(result.waiting.length)h+='<div class="draw-wait"><strong>مستنيين الدور:</strong> '+result.waiting.map(function(p){return esc(p.n)}).join('، ')+'<small>العدد مش مكمل مواجهة '+(size===2?'اتنين ضد اتنين':'واحد ضد واحد')+'. ممكن تعيد القرعة لتوزيع جديد.</small></div>';
+ $('draw-result').innerHTML=h;
+ $('draw-button').textContent='إعادة القرعة';
+ drawRoster=JSON.stringify(S.pl.map(function(p){return p.n}));
+}
 function init(){
+ $('draw-button').onclick=runDraw;
+ $('draw-mode').addEventListener('change',clearDraw);
  ['dur','price','hours','ppm','rnd'].forEach(function(k){
   var el=$(k);el.value=S[k];
   el.addEventListener('input',function(){S[k]=el.value;save();renderOut()});
